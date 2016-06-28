@@ -50,13 +50,13 @@ public class FolderDiff implements Serializable {
 	public void setIncludeFilter(String[] filters) {
 		filterEnabled = true;
 		includeFilter = true;
-		this.filters = filters;
+		this.filters = (String[]) filters.clone();
 	}
 	
 	public void setExcludeFilter(String[] filters) {
 		filterEnabled = true;
 		includeFilter = false;
-		this.filters = filters;		
+		this.filters = (String[]) filters.clone();		
 	}
 	
 	public void setAllowDeleteList(Set<String> allowDeleteList) {

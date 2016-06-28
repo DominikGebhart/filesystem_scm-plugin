@@ -103,11 +103,11 @@ public class Changelog extends hudson.scm.ChangeLogSet.Entry {
 	}
 
 	public Date getDate() {
-		return date;
+		return date == null ? null : (Date) date.clone();
 	}
 	
 	public void setDate(Date date) {
-		this.date = date;
+		this.date = date == null ? null : (Date) date.clone();
 	}
 
 	@Override

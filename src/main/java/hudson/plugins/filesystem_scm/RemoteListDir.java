@@ -8,6 +8,7 @@ import org.apache.commons.io.FileUtils;
 
 import hudson.FilePath.FileCallable;
 import hudson.remoting.VirtualChannel;
+import org.jenkinsci.remoting.RoleChecker;
 
 public class RemoteListDir implements FileCallable< Set<String> > { 
 	
@@ -25,4 +26,9 @@ public class RemoteListDir implements FileCallable< Set<String> > {
 		}
 		return set;
 	}
+
+   @Override
+   public void checkRoles(RoleChecker checker) throws SecurityException {
+      throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+   }
 }

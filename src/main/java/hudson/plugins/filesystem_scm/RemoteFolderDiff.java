@@ -8,6 +8,7 @@ import hudson.tools.JDKInstaller.Platform;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.jenkinsci.remoting.RoleChecker;
 
 public class RemoteFolderDiff extends FolderDiff {
 
@@ -83,6 +84,11 @@ public class RemoteFolderDiff extends FolderDiff {
 			List<FolderDiff.Entry> delFiles = getDeletedFiles(lastSuccessfulBuildTime, true, true);
 			return delFiles.size() > 0;
 		}		
+
+      @Override
+      public void checkRoles(RoleChecker checker) throws SecurityException {
+         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+      }
 	}
 	
 	public static class CheckOut extends RemoteFolderDiff implements FileCallable< List<FolderDiff.Entry> > {
@@ -98,5 +104,10 @@ public class RemoteFolderDiff extends FolderDiff {
 			files.addAll(delFiles);
 			return files;
 		}	
+
+      @Override
+      public void checkRoles(RoleChecker checker) throws SecurityException {
+         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+      }
 	}
 }

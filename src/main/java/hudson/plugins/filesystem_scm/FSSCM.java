@@ -1,5 +1,6 @@
 package hudson.plugins.filesystem_scm;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.*;
 import java.util.*;
 
@@ -21,69 +22,101 @@ import hudson.scm.SCMDescriptor;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * {@link SCM} implementation which watches a file system folder.
  */
 public class FSSCM extends SCM {
+      
+   @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD") 
+      public static class FileFilter{
+         public Boolean includeFilter;
+         public String[] filterList;
+         
+         @DataBoundConstructor
+         public FileFilter(boolean includeFilter, FilterValue[] filter, boolean excludeFilter) { 
+            
+            List<String> entryHolder = new ArrayList<>();
+            this.includeFilter = includeFilter;
+            if (null != filter) {
+               for(FilterValue entry : filter) {
+                  entryHolder.add(entry.filterText);
+               }
+            }
+            this.filterList = (String[]) entryHolder.toArray(new String[0]);             
+         }
+      }
+   @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD") 
+      public static class FilterValue{         
+         public String filterText;
+         
+         @DataBoundConstructor
+         public FilterValue(String filters) {
+            this.filterText = filters;
+         }
+      }
 
-	/** The source folder
-	 * 
-	 */
-	private String path;
-	/** If true, will delete everything in workspace every time before we checkout
-	 * 
-	 */
-	private boolean clearWorkspace;
-	/** If true, will copy hidden files and folders. Default is false.
-	 * 
-	 */
-	private boolean copyHidden;
-	/** If we have include/exclude filter, then this is true
-	 * 
-	 */
-	private boolean filterEnabled;
-	/** Is this filter a include filter or exclude filter
-	 * 
-	 */
-	private boolean includeFilter;
-	/** filters will be passed to org.apache.commons.io.filefilter.WildcardFileFilter
-	 * 
-	 */
-	private String[] filters;
+         /** The source folder
+          * 
+          */
+         private String path;
+         /** If true, will delete everything in workspace every time before we checkout
+          * 
+          */
+         private boolean clearWorkspace;
+         /** If true, will copy hidden files and folders. Default is false.
+          * 
+          */
+         private boolean copyHidden;
+         /** If we have include/exclude filter, then this is true
+          * 
+          */
+         private boolean filterEnabled;
+         /** Is this filter a include filter or exclude filter
+          * 
+          */
+         private boolean includeFilter;
+         /** filters will be passed to org.apache.commons.io.filefilter.WildcardFileFilter
+          * 
+          */
+         private String[] filters;
 	
-	// Don't use DataBoundConsturctor, it is still not mature enough, many HTML form elements are not binded
-	// @DataBoundConstructor
-    public FSSCM(String path, boolean clearWorkspace, boolean copyHidden, boolean filterEnabled, boolean includeFilter, String[] filters) {
-    	this.path = path;
-    	this.clearWorkspace = clearWorkspace;
-    	this.copyHidden = copyHidden;
-    	this.filterEnabled = filterEnabled;
-    	this.includeFilter = includeFilter;
-    	
-		// in hudson 1.337, in filters = null, XStream will throw NullPointerException
-		// this.filters = null;
-		this.filters = new String[0];
-   		if ( null != filters ) {
-   			Vector<String> v = new Vector<String>();
-   			for(int i=0; i<filters.length; i++) {
-   				// remove empty strings
-   				if ( StringUtils.isNotEmpty(filters[i]) ) {
-   					v.add(filters[i]);
-   				}
-   			}
-   			if ( v.size() > 0 ) {
-   				this.filters = (String[]) v.toArray(new String[1]);
-   			}
-   		}
-    }
+         // Don't use DataBoundConsturctor, it is still not mature enough, many HTML form elements are not binded
+         @DataBoundConstructor
+   public FSSCM(String path, boolean clearWorkspace, boolean copyHidden, FileFilter filterEnabled) {
+      this.path = path;
+      this.clearWorkspace = clearWorkspace;
+      this.copyHidden = copyHidden;        
+      if (filterEnabled != null) {        
+         this.filterEnabled = filterEnabled != null;
+         this.includeFilter = filterEnabled.includeFilter;                         
+      }
+              // in hudson 1.337, in filters = null, XStream will throw NullPointerException
+              // this.filters = null;
+
+      this.filters = new String[0];
+         if ( null != filterEnabled ) { 
+            String[] _filterList = filterEnabled.filterList;
+            Vector<String> v = new Vector<>();
+         for (String entry : _filterList) {
+            // remove empty strings
+            if (StringUtils.isNotEmpty(entry)) {
+               v.add(entry);
+            }
+         }
+         if ( v.size() > 0 ) {
+            this.filters = (String[]) v.toArray(new String[1]);
+         }
+      }
+   }
     
 	public String getPath() {
 		return path;
 	}
 
 	public String[] getFilters() {
-		return filters;
+		return (String[]) filters.clone();
 	}
 	
 	public boolean isFilterEnabled() {
@@ -258,7 +291,7 @@ public class FSSCM extends SCM {
         public String getDisplayName() {
             return "File System";
         }
-        
+        @SuppressFBWarnings(value = "DLS_DEAD_LOCAL_STORE")        
         public FormValidation doFilterCheck(@QueryParameter final String value) {
         	if ( null == value || value.trim().length() == 0 ) return FormValidation.ok();
         	if ( value.startsWith("/") || value.startsWith("\\") || value.matches("[a-zA-Z]:.*") ) {
@@ -278,7 +311,7 @@ public class FSSCM extends SCM {
             return true;
         }        
         
-        @Override
+        /*@Override
         public FSSCM newInstance(StaplerRequest req, JSONObject formData) throws FormException {
         	String path = req.getParameter("fs_scm.path");
         	String[] filters = req.getParameterValues("fs_scm.filters");
@@ -287,7 +320,7 @@ public class FSSCM extends SCM {
         	Boolean clearWorkspace = Boolean.valueOf("on".equalsIgnoreCase(req.getParameter("fs_scm.clearWorkspace")));
         	Boolean copyHidden = Boolean.valueOf("on".equalsIgnoreCase(req.getParameter("fs_scm.copyHidden")));
             return new FSSCM(path, clearWorkspace, copyHidden, filterEnabled, includeFilter, filters);
-        }
+        }*/
         
     }
 
